@@ -29,6 +29,32 @@ app.use('*', cors({
 }));
 
 // Helper functions for Authentication
+function getEnvValue(key: string, envOrContext?: any): string {
+  if (envOrContext && typeof envOrContext === 'object') {
+    // If it's a Hono context object, c.env contains the Cloudflare Worker environment bindings
+    if ('env' in envOrContext && envOrContext.env && typeof envOrContext.env === 'object') {
+      const val = envOrContext.env[key];
+      if (typeof val === 'string' && val.trim()) return val.trim();
+    }
+    // If envOrContext is the env bindings object directly
+    if (key in envOrContext) {
+      const val = envOrContext[key];
+      if (typeof val === 'string' && val.trim()) return val.trim();
+    }
+  }
+
+  // Fallback to process.env for Node.js / local development / tests
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return (process.env[key] || '').trim();
+    }
+  } catch {
+    // Ignore in non-Node environments
+  }
+
+  return '';
+}
+
 function getAuthToken(c: any): string | null {
   const authHeader = c.req.header('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -41,19 +67,24 @@ function getAuthToken(c: any): string | null {
   return null;
 }
 
-function isUserAdmin(user: User | null | undefined): boolean {
+function isUserAdmin(user: User | null | undefined, envOrContext?: any): boolean {
   if (!user) return false;
-  const configuredAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+
+  const configuredAdminEmail = getEnvValue('ADMIN_EMAIL', envOrContext).toLowerCase();
   if (configuredAdminEmail && user.email.toLowerCase() === configuredAdminEmail) {
     return true;
   }
-  const adminAllowlist = (process.env.ADMIN_EMAILS || '')
+
+  const rawAdminEmails = getEnvValue('ADMIN_EMAILS', envOrContext);
+  const adminAllowlist = rawAdminEmails
     .split(',')
-    .map(e => e.trim().toLowerCase())
+    .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
+
   if (adminAllowlist.length > 0 && adminAllowlist.includes(user.email.toLowerCase())) {
     return true;
   }
+
   return user.id === 'admin-master' || user.role === 'admin';
 }
 
@@ -114,7 +145,7 @@ app.get('/api/auth/status', (c) => {
         id: user.id,
         email: user.email,
         username: user.username,
-        role: isUserAdmin(user) ? 'admin' : 'member',
+        role: isUserAdmin(user, c) ? 'admin' : 'member',
         avatar: user.avatar || '',
       },
     });
@@ -129,13 +160,13 @@ app.get('/api/auth/status', (c) => {
 
 app.get('/api/auth/config', (c) => {
   const googleClientId = (
-    process.env.GOOGLE_CLIENT_ID ||
-    process.env.VITE_GOOGLE_CLIENT_ID ||
+    getEnvValue('GOOGLE_CLIENT_ID', c) ||
+    getEnvValue('VITE_GOOGLE_CLIENT_ID', c) ||
     ''
   ).trim();
   const firebaseProjectId = (
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.VITE_FIREBASE_PROJECT_ID ||
+    getEnvValue('FIREBASE_PROJECT_ID', c) ||
+    getEnvValue('VITE_FIREBASE_PROJECT_ID', c) ||
     'mental-tactic'
   ).trim();
 
@@ -250,7 +281,7 @@ app.post('/api/auth/login', async (c) => {
       id: user.id,
       email: user.email,
       username: user.username,
-      role: isUserAdmin(user) ? 'admin' : 'member',
+      role: isUserAdmin(user, c) ? 'admin' : 'member',
       avatar: user.avatar || '',
     },
   });
@@ -304,7 +335,7 @@ app.post('/api/auth/google', async (c) => {
       email: user.email,
       username: user.username,
       avatar: user.avatar,
-      role: isUserAdmin(user) ? 'admin' : 'member',
+      role: isUserAdmin(user, c) ? 'admin' : 'member',
     },
   });
 });
@@ -320,7 +351,7 @@ app.get('/api/auth/me', (c) => {
       id: user.id,
       email: user.email,
       username: user.username,
-      role: isUserAdmin(user) ? 'admin' : 'member',
+      role: isUserAdmin(user, c) ? 'admin' : 'member',
       avatar: user.avatar || '',
     },
   });
@@ -360,7 +391,7 @@ app.post('/api/auth/change-password', async (c) => {
 // ----------------------------------------------------
 const handleStats = (c: any) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) {
+  if (!user || !isUserAdmin(user, c)) {
     return c.json({ error: 'Unauthorized: Administrator privileges required' }, 401);
   }
 
@@ -396,13 +427,13 @@ app.get('/api/admin/stats', handleStats);
 
 app.get('/api/admin/users', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const users = db.getUsers().map(u => ({
     id: u.id,
     email: u.email,
     username: u.username,
-    role: isUserAdmin(u) ? 'admin' : 'member',
+    role: isUserAdmin(u, c) ? 'admin' : 'member',
     avatar: u.avatar,
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
@@ -412,7 +443,7 @@ app.get('/api/admin/users', (c) => {
 
 app.post('/api/admin/users', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const { email, username, password, role } = await c.req.json();
   if (!email || !password || password.length < 6) {
@@ -442,7 +473,7 @@ app.post('/api/admin/users', async (c) => {
 
 app.put('/api/admin/users/:id', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   const updates = await c.req.json();
@@ -454,7 +485,7 @@ app.put('/api/admin/users/:id', async (c) => {
 
 app.delete('/api/admin/users/:id', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   if (id === 'admin-master' || id === user.id) {
@@ -472,7 +503,7 @@ app.delete('/api/admin/users/:id', (c) => {
 // ----------------------------------------------------
 app.get('/api/public/data', (c) => {
   const user = getAuthenticatedUser(c);
-  const isAdmin = isUserAdmin(user);
+  const isAdmin = isUserAdmin(user, c);
 
   let articles = db.getArticles();
   if (!isAdmin) {
@@ -502,7 +533,7 @@ app.get('/api/public/data', (c) => {
 // ----------------------------------------------------
 app.get('/api/articles', (c) => {
   const user = getAuthenticatedUser(c);
-  const isAdmin = isUserAdmin(user);
+  const isAdmin = isUserAdmin(user, c);
 
   let articles = db.getArticles();
   const search = c.req.query('search');
@@ -533,7 +564,7 @@ app.get('/api/articles', (c) => {
 app.get('/api/articles/:slugOrId', (c) => {
   const slugOrId = decodeURIComponent(c.req.param('slugOrId'));
   const user = getAuthenticatedUser(c);
-  const isAdmin = isUserAdmin(user);
+  const isAdmin = isUserAdmin(user, c);
 
   let article = db.getArticleBySlug(slugOrId) || db.getArticleById(slugOrId);
   if (!article) {
@@ -549,7 +580,7 @@ app.get('/api/articles/:slugOrId', (c) => {
 
 app.post('/api/articles', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const { title, description, content, featuredImage, category, categoryId, status, seoTitle, seoDescription } = await c.req.json();
   if (!title || !content) {
@@ -590,7 +621,7 @@ app.post('/api/articles', async (c) => {
 
 app.put('/api/articles/:id', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   const existing = db.getArticleById(id);
@@ -630,7 +661,7 @@ app.put('/api/articles/:id', async (c) => {
 
 app.patch('/api/articles/:id/status', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   const existing = db.getArticleById(id);
@@ -649,7 +680,7 @@ app.patch('/api/articles/:id/status', (c) => {
 
 app.delete('/api/articles/:id', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   db.deleteArticle(id);
@@ -666,7 +697,7 @@ app.get('/api/categories', (c) => {
 
 app.post('/api/categories', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const { name, description, image } = await c.req.json();
   if (!name || typeof name !== 'string' || !name.trim()) {
@@ -697,7 +728,7 @@ app.post('/api/categories', async (c) => {
 
 app.put('/api/categories/:id', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   const existing = db.getCategoryById(id);
@@ -717,7 +748,7 @@ app.put('/api/categories/:id', async (c) => {
 
 app.delete('/api/categories/:id', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   const existing = db.getCategoryById(id);
@@ -740,7 +771,7 @@ app.delete('/api/categories/:id', (c) => {
 // ----------------------------------------------------
 app.get('/api/products', (c) => {
   const user = getAuthenticatedUser(c);
-  const isAdmin = isUserAdmin(user);
+  const isAdmin = isUserAdmin(user, c);
 
   let products = db.getProducts();
   if (!isAdmin) {
@@ -759,7 +790,7 @@ app.get('/api/products/:id', (c) => {
 
 app.post('/api/products', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const { name, description, price, currency, image, url, status } = await c.req.json();
   if (!name || typeof name !== 'string' || !name.trim()) {
@@ -786,7 +817,7 @@ app.post('/api/products', async (c) => {
 
 app.put('/api/products/:id', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   const existing = db.getProductById(id);
@@ -811,7 +842,7 @@ app.put('/api/products/:id', async (c) => {
 
 app.delete('/api/products/:id', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   db.deleteProduct(id);
@@ -823,7 +854,7 @@ app.delete('/api/products/:id', (c) => {
 // ----------------------------------------------------
 app.get('/api/media', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   let media = db.getMedia();
   const search = c.req.query('search');
@@ -837,7 +868,7 @@ app.get('/api/media', (c) => {
 
 app.post('/api/media/upload', async (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   try {
     const contentType = c.req.header('content-type') || '';
@@ -904,7 +935,7 @@ app.post('/api/media/upload', async (c) => {
 
 app.delete('/api/media/:id', (c) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
 
   const id = c.req.param('id');
   db.deleteMedia(id);
@@ -917,7 +948,7 @@ app.delete('/api/media/:id', (c) => {
 const handleGetHomepage = (c: any) => c.json({ homepage: db.getHomepageSettings() });
 const handlePutHomepage = async (c: any) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
   const current = db.getHomepageSettings();
   const body = await c.req.json();
   const updated = { ...current, ...body };
@@ -933,7 +964,7 @@ app.put('/api/settings/homepage', handlePutHomepage);
 const handleGetDonations = (c: any) => c.json({ donations: db.getDonationSettings() });
 const handlePutDonations = async (c: any) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
   const current = db.getDonationSettings();
   const body = await c.req.json();
   const updated = { ...current, ...body };
@@ -949,7 +980,7 @@ app.put('/api/settings/donations', handlePutDonations);
 const handleGetWebsite = (c: any) => c.json({ settings: db.getWebsiteSettings() });
 const handlePutWebsite = async (c: any) => {
   const user = getAuthenticatedUser(c);
-  if (!user || !isUserAdmin(user)) return c.json({ error: 'Unauthorized' }, 401);
+  if (!user || !isUserAdmin(user, c)) return c.json({ error: 'Unauthorized' }, 401);
   const current = db.getWebsiteSettings();
   const body = await c.req.json();
   const updated = { ...current, ...body };
