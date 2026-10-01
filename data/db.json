@@ -1,0 +1,199 @@
+{
+  "users": [
+    {
+      "id": "admin-master",
+      "email": "admin@mentaltactic.com",
+      "username": "Administrator",
+      "passwordHash": "095021f6f0c8776c197dae5c90956c8c31c81e8409f71dbac973b0756dad30485b4f3e85dd48ce557fa8a96db86338313eb7931fad86b7cca99eac10b0afd250",
+      "salt": "a182c7d89d42bf82f808bb26050eee00",
+      "createdAt": "2026-09-28T06:07:12.670Z",
+      "updatedAt": "2026-09-28T06:07:12.670Z"
+    },
+    {
+      "id": "325a1dcb-6a22-4294-ac7c-aba5d8403de6",
+      "email": "testreader_1790648725976@example.com",
+      "username": "Test Reader",
+      "passwordHash": "11fb0b41a01f1392aecba2e8bec8bb4ca58a99c0c65c08adfd811a261ef79bb1957274ce459a919d2c94272aa93eae19184efc37073ea40bd285f8aa23835016",
+      "salt": "aa782dcbaf506801a837202923727e8d",
+      "role": "member",
+      "createdAt": "2026-09-29T02:25:26.032Z",
+      "updatedAt": "2026-09-29T02:25:26.032Z"
+    },
+    {
+      "id": "687ee369-6cdb-47c1-8165-baaaa2e22b28",
+      "email": "visitor_1790649261853@example.com",
+      "username": "Casual Reader",
+      "passwordHash": "4e1758d6800f596e62a2e84019092a197aac1badde92b2091d7d6a8ae1d08503973433a601b3c10e4815d799dbc59516144001fb34874df5e09f629af983186c",
+      "salt": "00a70dde90d2f6d5cef8852478549e50",
+      "role": "member",
+      "createdAt": "2026-09-29T02:34:21.910Z",
+      "updatedAt": "2026-09-29T02:34:21.910Z"
+    },
+    {
+      "id": "87c66cbe-ba68-4026-89af-99a487c85e58",
+      "email": "tharushabandara678@gmail.com",
+      "username": "admin",
+      "passwordHash": "f2775b551fe3a617a9f35d5d4a1d6100ce591acbfb23a621057c1393bd161d0ab7aff95a8c79cf8872556333df4c183a0729e863a20286ac5087a450d3c789db",
+      "salt": "4f810677b749be6dcca09778129ab30a",
+      "role": "member",
+      "createdAt": "2026-09-29T02:45:05.861Z",
+      "updatedAt": "2026-09-29T02:45:05.861Z"
+    },
+    {
+      "id": "2f962c3d-5955-4973-88a1-edcd2fd07279",
+      "email": "test_member_1790652069835@example.com",
+      "username": "Test Member",
+      "passwordHash": "cc98774c0b61a137e82bd668dbabc78bb7155fd8ebf367da3eee34bf84211887b51426584d4e70f15aff839404c90b43f43a206aea6878e427f428868fbd4908",
+      "salt": "e5ee106f4604d0751b4c7cfe3c7e41ed",
+      "role": "member",
+      "createdAt": "2026-09-29T03:21:09.898Z",
+      "updatedAt": "2026-09-29T03:21:09.898Z"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "2f8ac2687a2dfb4d58a135c3cae301a4b31e8d076dd6bd29a03b7af62f9c8746",
+      "userId": "admin-master",
+      "createdAt": "2026-09-28T06:07:24.858Z",
+      "expiresAt": "2026-10-05T06:07:24.858Z"
+    },
+    {
+      "token": "3e96231cd64112e4d0b5c3840b4d70ac450287834dafe8755c2dd99f711d4e47",
+      "userId": "admin-master",
+      "createdAt": "2026-09-28T06:32:00.529Z",
+      "expiresAt": "2026-10-05T06:32:00.529Z"
+    },
+    {
+      "token": "b0e12061cbba58f96a7c90d474907ec25888e17e3d73b3215392b5431c2a62cc",
+      "userId": "admin-master",
+      "createdAt": "2026-09-29T02:07:50.204Z",
+      "expiresAt": "2026-10-06T02:07:50.204Z"
+    },
+    {
+      "token": "b557646272bb0b25a0ac5e3592ed8fbaa422d571d9dbba148d0ca2d3e75513cd",
+      "userId": "admin-master",
+      "createdAt": "2026-09-29T02:25:25.955Z",
+      "expiresAt": "2026-10-06T02:25:25.955Z"
+    },
+    {
+      "token": "aeaa3dba224d586f864ce01b975664ca5276a957cc5b669ede953e663efc3bc4",
+      "userId": "325a1dcb-6a22-4294-ac7c-aba5d8403de6",
+      "createdAt": "2026-09-29T02:25:26.033Z",
+      "expiresAt": "2026-10-06T02:25:26.033Z"
+    },
+    {
+      "token": "15c4a2d618dd332ea35ead1fc3a1e1da74607cb3378fe7e78d0ba6c61f3dd977",
+      "userId": "admin-master",
+      "createdAt": "2026-09-29T02:34:21.823Z",
+      "expiresAt": "2026-10-06T02:34:21.823Z"
+    },
+    {
+      "token": "840f3dfafe6434802253dcf13aac7a7e02f3a8b2b68e35db63023b6478bdbbbb",
+      "userId": "687ee369-6cdb-47c1-8165-baaaa2e22b28",
+      "createdAt": "2026-09-29T02:34:21.910Z",
+      "expiresAt": "2026-10-06T02:34:21.910Z"
+    },
+    {
+      "token": "5061d2397681dbf1ffad4a351e5ac944a587e9ff110139c3c96323dfe4ba27fd",
+      "userId": "admin-master",
+      "createdAt": "2026-09-29T03:21:09.814Z",
+      "expiresAt": "2026-10-06T03:21:09.814Z"
+    },
+    {
+      "token": "9216dd1494eec08a1eafab12d8b432aba2bb6b971b425af8959455e37e68aaef",
+      "userId": "2f962c3d-5955-4973-88a1-edcd2fd07279",
+      "createdAt": "2026-09-29T03:21:09.899Z",
+      "expiresAt": "2026-10-06T03:21:09.899Z"
+    },
+    {
+      "token": "c0cbff96dcc9409690e68dbdd1b24085b8358e65b9e715b2f72dab7854849c4e",
+      "userId": "admin-master",
+      "createdAt": "2026-10-01T13:52:23.886Z",
+      "expiresAt": "2026-10-08T13:52:23.886Z"
+    },
+    {
+      "token": "1bd8ebf46d99bd10313b6a58a10361053808b5f943590a9452196c005d514980",
+      "userId": "admin-master",
+      "createdAt": "2026-10-01T13:53:05.309Z",
+      "expiresAt": "2026-10-08T13:53:05.309Z"
+    },
+    {
+      "token": "b0d0977438a8c45b67bfb878237f267e460b3800326e97c56988f6e53ed3a051",
+      "userId": "admin-master",
+      "createdAt": "2026-10-01T14:12:02.261Z",
+      "expiresAt": "2026-10-08T14:12:02.261Z"
+    }
+  ],
+  "articles": [
+    {
+      "id": "29011d69-39fc-413e-a7b2-efdafeee2863",
+      "title": "Cognitive Superiority in Tactical Operations",
+      "slug": "cognitive-superiority-in-tactical-operations",
+      "description": "Strategic analysis of psychological endurance and mental composure.",
+      "content": "<p>The cognitive margin between mission success and reactive failure is engineered through disciplined mental conditioning.</p>",
+      "featuredImage": "",
+      "category": "",
+      "author": "Mental Tactic Operations",
+      "status": "Published",
+      "publishedAt": "2026-09-29T02:34:21.842Z",
+      "createdAt": "2026-09-29T02:34:21.842Z",
+      "updatedAt": "2026-09-29T02:34:21.842Z",
+      "seoTitle": "Cognitive Superiority in Tactical Operations",
+      "seoDescription": "Strategic analysis of psychological endurance and mental composure."
+    },
+    {
+      "id": "6423bf42-39ff-43fd-892d-a74df1b1928b",
+      "title": "The Art of Calculated Composure",
+      "slug": "the-art-of-calculated-composure",
+      "description": "Understanding high-pressure cognitive stabilization in adversarial settings.",
+      "content": "<p>Under acute cognitive stress, baseline strategic capabilities often degrade into reactive heuristics. The mental tactic is deliberate equilibrium.</p>",
+      "featuredImage": "",
+      "category": "",
+      "author": "Tactical Director",
+      "status": "Published",
+      "publishedAt": "2026-09-29T02:25:25.967Z",
+      "createdAt": "2026-09-29T02:25:25.967Z",
+      "updatedAt": "2026-09-29T02:25:25.967Z",
+      "seoTitle": "The Art of Calculated Composure",
+      "seoDescription": "Understanding high-pressure cognitive stabilization in adversarial settings."
+    }
+  ],
+  "categories": [],
+  "media": [],
+  "products": [],
+  "homepageSettings": {
+    "headline": "",
+    "tagline": "",
+    "introText": "",
+    "heroImage": "",
+    "ctaText": "",
+    "ctaUrl": "",
+    "articlesTitle": "",
+    "storeTitle": "",
+    "donationsTitle": ""
+  },
+  "donationSettings": {
+    "title": "",
+    "description": "",
+    "buttonText": "",
+    "donationUrl": "",
+    "paymentMethods": "",
+    "active": false
+  },
+  "websiteSettings": {
+    "websiteName": "Mental Tactic",
+    "websiteDescription": "Master the psychological advantage. Strategic insights, mental resilience, and tactical cognition.",
+    "logo": "",
+    "favicon": "",
+    "defaultSeoTitle": "Mental Tactic | Strategic Mindset & Tactical Cognition",
+    "defaultSeoDescription": "Master the psychological advantage. Strategic insights, mental resilience, and tactical cognition.",
+    "contactEmail": "",
+    "socialLinks": {
+      "x": "",
+      "instagram": "",
+      "youtube": "",
+      "discord": "",
+      "telegram": ""
+    }
+  }
+}
