@@ -137,6 +137,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     if (res && typeof res === 'object' && 'user' in res && res.user) {
+      authStorage.setToken(res.token);
       setUser(res.user);
       setIsAuthenticated(true);
       return;
@@ -199,3 +200,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
