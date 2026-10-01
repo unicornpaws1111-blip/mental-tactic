@@ -120,6 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const res = await api.loginWithGoogle(credential);
         if (res && typeof res === 'object' && 'user' in res && res.user) {
+          authStorage.setToken(res.token);
           setUser(res.user);
         }
       } catch {
@@ -200,4 +201,6 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+
 
