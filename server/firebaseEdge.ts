@@ -1,6 +1,6 @@
 /**
  * Edge-compatible Firebase Authentication & Token Verification.
- * Works seamlessly in Cloudflare Workers, Cloudflare Pages, Vercel, and Node.js.
+ * Verifies Firebase ID tokens using Firebase Auth REST API.
  */
 
 export interface DecodedGoogleUser {
@@ -10,36 +10,50 @@ export interface DecodedGoogleUser {
   picture: string;
 }
 
-/**
- * Validates a Firebase / Google ID token using Google's secure tokeninfo service.
- * Operates purely over HTTPS fetch without gRPC or Node-only internal modules.
- */
-export async function verifyGoogleTokenEdge(idToken: string): Promise<DecodedGoogleUser | null> {
-  if (!idToken || typeof idToken !== 'string') return null;
+export async function verifyGoogleTokenEdge(
+  idToken: string,
+  apiKey: string
+): Promise<DecodedGoogleUser | null> {
+  if (!idToken || typeof idToken !== 'string' || !apiKey) return null;
 
   try {
-    const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken.trim())}`;
-    const res = await fetch(url);
+    const res = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idToken: idToken.trim(),
+        }),
+      }
+    );
+
     if (!res.ok) {
-      console.warn(`[Auth] Google token verification returned HTTP ${res.status}`);
+      console.warn(`[Auth] Firebase token verification returned HTTP ${res.status}`);
       return null;
     }
 
     const data = await res.json() as any;
-    if (!data.sub) return null;
+    const firebaseUser = data?.users?.[0];
 
-    const email = (data.email || '').trim().toLowerCase();
-    const name = data.name || (email ? email.split('@')[0] : 'Tactical Member');
-    const picture = data.picture || '';
+    if (!firebaseUser?.localId) return null;
+
+    const email = (firebaseUser.email || '').trim().toLowerCase();
+    const name =
+      firebaseUser.displayName ||
+      (email ? email.split('@')[0] : 'Tactical Member');
+    const picture = firebaseUser.photoUrl || '';
 
     return {
-      uid: data.sub,
+      uid: firebaseUser.localId,
       email,
       name,
       picture,
     };
   } catch (err) {
-    console.error('[Auth] Failed to verify Google token:', err);
+    console.error('[Auth] Failed to verify Firebase ID token:', err);
     return null;
   }
 }

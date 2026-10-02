@@ -293,7 +293,7 @@ app.post('/api/auth/google', async (c) => {
     return c.json({ error: 'Invalid Google credential token provided.' }, 400);
   }
 
-  const decoded = await verifyGoogleTokenEdge(credential);
+  const decoded = await verifyGoogleTokenEdge(credential, getEnvValue('FIREBASE_API_KEY', c));
   if (!decoded || !decoded.uid) {
     return c.json({ error: 'Google authentication token verification failed.' }, 401);
   }
@@ -1024,3 +1024,4 @@ app.all('/api/*', (c) => {
 });
 
 export default app;
+

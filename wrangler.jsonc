@@ -11,8 +11,10 @@
   },
   "vars": {
     "FIREBASE_PROJECT_ID": "mental-tactic",
-    "VITE_FIREBASE_PROJECT_ID": "mental-tactic",
+    "VITE_FIREBASE_PROJECT_ID": "mental-tactic", "FIREBASE_API_KEY": "AIzaSyA55tYoT1YQUtei2jq6sY7vFgysPTf4xyU",
    "ADMIN_EMAIL": "solodreamersd@gmail.com",
    "ADMIN_EMAILS": "solodreamersd@gmail.com"
   }
 }
+
+
